@@ -1,0 +1,10 @@
+{
+    "name": "طنین جنوب",
+    "short_name": "طنین جنوب",
+    "lang": "fa",
+    "dir": "rtl",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#F7F4EF",
+    "theme_color": "#2C3E50"
+}

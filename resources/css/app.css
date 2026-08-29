@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+
+@source '../**/*.vue';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+    --color-cream: #F7F4EF;
+    --color-brand-red: #C0392B;
+    --color-navy: #2C3E50;
+    --color-divider: #E0D9CF;
+    --color-muted: #737373;
+}
+
+:root { color-scheme: light; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: #F7F4EF; color: #1A1A1A; font-family: 'Vazirmatn', sans-serif; }
+button, input { font: inherit; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #C0392B; outline-offset: 2px; }
+.mobile-auth-action { position: absolute; left: 1rem; }
+@media (min-width: 640px) {
+    .mobile-auth-action { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+.line-clamp-2 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.ticker-track { animation: ticker-scroll 32s linear infinite; }
+.ticker-track.paused { animation-play-state: paused; }
+.ticker-item { transition: color 150ms ease; }
+.ticker-item:hover { color: #FDE68A; }
+@keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; }
+}
