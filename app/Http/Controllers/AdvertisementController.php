@@ -12,8 +12,14 @@ class AdvertisementController extends Controller
 {
     public function index(Request $request)
     {
+        $isManagement = $request->routeIs('management.advertisements.index');
+
+        if ($isManagement) {
+            $this->authorize('manage', Advertisement::class);
+        }
+
         $query = Advertisement::query()->with('media')->orderBy('sort_order')->latest();
-        if (! $request->user()) $query->active();
+        if (! $isManagement) $query->active();
 
         return ApiResponse::success(AdvertisementResource::collection($query->get()));
     }

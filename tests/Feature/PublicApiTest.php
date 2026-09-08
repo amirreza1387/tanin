@@ -19,6 +19,14 @@ it('lists and shows published articles with SEO fields', function (): void {
         ->assertJsonPath('data.seo.canonical_path', "/articles/{$article->slug}");
 });
 
+it('renders a published article when its URL is opened directly', function (): void {
+    $article = Article::factory()->published()->create();
+
+    $this->get("/articles/{$article->slug}")
+        ->assertOk()
+        ->assertSee($article->title);
+});
+
 it('searches published articles on SQLite using LIKE fallback', function (): void {
     Article::factory()->published()->create([
         'title' => 'خبر ویژه خوزستان',

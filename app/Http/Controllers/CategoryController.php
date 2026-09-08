@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Services\SlugService;
 use App\Support\ApiResponse;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
@@ -18,7 +19,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        return ApiResponse::success(CategoryResource::collection($this->categories->tree()));
+        return ApiResponse::success(CategoryResource::collection(Cache::remember('public:categories', 3600, fn () => $this->categories->tree())));
     }
 
     public function show(string $slug)
@@ -32,6 +33,7 @@ class CategoryController extends Controller
         $data = $request->validated();
         $data['slug'] = $this->slugs->make($data['name'], Category::class);
         $category = Category::create($data);
+        Cache::forget('public:categories');
 
         return ApiResponse::success(new CategoryResource($category), [], 201);
     }
@@ -44,6 +46,7 @@ class CategoryController extends Controller
             $data['slug'] = $this->slugs->make($data['name'], Category::class, $category->id);
         }
         $category->update($data);
+        Cache::forget('public:categories');
 
         return ApiResponse::success(new CategoryResource($category->fresh()));
     }
@@ -52,6 +55,7 @@ class CategoryController extends Controller
     {
         $this->authorize('manage', Category::class);
         $category->delete();
+        Cache::forget('public:categories');
 
         return ApiResponse::success(['message' => __('messages.category_deleted')]);
     }

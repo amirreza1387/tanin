@@ -43,6 +43,12 @@ class ViewCounterService
             $flushed += $views;
         }
 
+        if ($flushed > 0) {
+            Cache::forget('articles:most-viewed:today');
+            Cache::forget('articles:most-viewed:week');
+            Cache::forget('management:analytics:overview');
+        }
+
         return $flushed;
     }
 

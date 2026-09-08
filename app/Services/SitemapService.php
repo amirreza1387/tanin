@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\File;
 
 class SitemapService
 {
-    public function refresh(): void
+    public function xml(): string
     {
         $urls = collect()
             ->merge(Article::query()->where('status', 'published')->get()->map(fn (Article $article) => [
@@ -36,7 +36,12 @@ class SitemapService
         }
         $xml .= '</urlset>'.PHP_EOL;
 
+        return $xml;
+    }
+
+    public function refresh(): void
+    {
         File::ensureDirectoryExists(public_path());
-        File::put(public_path('sitemap.xml'), $xml);
+        File::put(public_path('sitemap.xml'), $this->xml());
     }
 }

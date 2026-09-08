@@ -697,6 +697,19 @@ Accept: application/json
 - `json_ld` از نوع `NewsArticle` است و headline، description، تاریخ انتشار، تاریخ ویرایش، نویسنده و تصویر را آماده دارد.
 - در SSR یا prerender، این فیلدها را در HTML اولیه قرار دهید تا crawler پیش از اجرای JavaScript نیز آن‌ها را ببیند.
 
+## سیستم طراحی رابط
+
+برای کاهش پراکندگی کلاس‌ها، اجزای جدید باید از توکن‌های معنایی و primitiveهای مشترک استفاده کنند. توکن‌ها در `resources/css/app.css` تعریف شده‌اند و primitiveها در `resources/js/components` قرار دارند.
+
+- رنگ‌ها: `primary` برای کنش اصلی، `danger` برای حذف/خطا، `success` برای نتیجه موفق، `warning` برای وضعیت نیازمند توجه، `info` برای اطلاعات و `surface` برای سطوح پس‌زمینه.
+- فاصله‌ها: از مقیاس ۱، ۲، ۳، ۴، ۵، ۶ و ۸ استفاده کنید؛ فاصله‌های صفحه معمولاً `p-4` تا `p-8` هستند.
+- تایپوگرافی: متن پایه `text-sm`، متن کمکی `text-xs` و عنوان صفحه `text-2xl font-black` است.
+- شعاع و سایه: کنترل‌ها `radius-md`، کارت‌ها `radius-xl` و مودال‌ها `radius-2xl` دارند؛ سایه پیش‌فرض `shadow-sm` است.
+- Primitiveها: برای دکمه از `Button`، ورودی از `Input`، فهرست از `Select`، برچسب از `Badge`/`StatusBadge` و سطح محتوا از `Card` استفاده کنید.
+- وضعیت‌ها: وضعیت‌های `published/approved/active` سبز، `pending` زرد، `scheduled` آبی، `rejected` قرمز و وضعیت ناشناخته خنثی هستند.
+- اعلان، جدول و صفحه‌بندی: به‌ترتیب از کلاس‌های `ds-alert`، `ds-table` و `ds-pagination` استفاده کنید. صفحه جاری باید `aria-current="page"` داشته باشد.
+- آیکن‌ها: به‌جای Unicode از `Icon.vue` و نام‌های ثبت‌شده مانند `menu`, `search`, `plus`, `close`, `upload`, `grid`, `file`, `chat`, `users`, `tag`, `image`, `ad` و آیکن‌های `weather-*` استفاده کنید.
+
 ## اجرای محلی
 
 ```bash

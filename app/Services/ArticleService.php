@@ -99,6 +99,21 @@ class ArticleService
         return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
     }
 
+    public function setFeatured(Article $article, bool $isFeatured): Article
+    {
+        if ($isFeatured && $article->status !== ArticleStatus::PUBLISHED) {
+            throw new \InvalidArgumentException('فقط خبر منتشرشده می‌تواند خبر منتخب باشد.');
+        }
+
+        return DB::transaction(function () use ($article, $isFeatured): Article {
+            if ($isFeatured) {
+                Article::query()->where('is_featured', true)->whereKeyNot($article->id)->update(['is_featured' => false]);
+            }
+            $article->update(['is_featured' => $isFeatured]);
+            return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+        });
+    }
+
     public function publishScheduled(): int
     {
         $count = 0;

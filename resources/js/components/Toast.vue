@@ -19,7 +19,7 @@ onUnmounted(() => {
 
 <template>
     <Transition enter-active-class="transition duration-200" enter-from-class="translate-y-4 opacity-0" leave-active-class="transition duration-200" leave-to-class="translate-y-4 opacity-0">
-        <div v-if="message" class="fixed bottom-5 left-5 z-[100] max-w-sm rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg" :class="type === 'error' ? 'bg-red-700' : 'bg-green-700'" role="status">
+        <div v-if="message" class="fixed bottom-5 left-5 z-[100] max-w-sm ds-alert font-bold shadow-lg" :class="type === 'error' ? 'ds-alert-error' : 'ds-alert-success'" role="status">
             {{ message }}
         </div>
     </Transition>

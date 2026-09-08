@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import api from '../lib/api';
+import AppSkeleton from '../components/AppSkeleton.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -43,7 +44,7 @@ const logout = async () => {
 
 <template>
     <div class="mx-auto max-w-2xl px-4 py-12">
-        <div v-if="loading" class="py-20 text-center text-muted">در حال بارگذاری...</div>
+        <AppSkeleton v-if="loading" variant="profile" />
         <div v-else-if="auth.user" class="space-y-5">
             <div class="rounded-2xl bg-white p-7 shadow-sm">
                 <h1 class="text-2xl font-black text-navy">پروفایل کاربر</h1>
@@ -56,12 +57,12 @@ const logout = async () => {
             <div class="rounded-2xl bg-white p-7 shadow-sm">
                 <h2 class="text-xl font-black text-navy">تغییر گذرواژه</h2>
                 <p class="mt-2 text-sm text-muted">بعد از تغییر، همه نشست‌های قبلی بسته می‌شوند.</p>
-                <div v-if="error" class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">{{ error }}</div>
-                <div v-if="message" class="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700" role="status">{{ message }}</div>
+                <div v-if="error" class="ds-alert ds-alert-error mt-4" role="alert">{{ error }}</div>
+                <div v-if="message" class="ds-alert ds-alert-success mt-4" role="status">{{ message }}</div>
                 <form class="mt-5 space-y-4" @submit.prevent="updatePassword">
-                    <input v-model="form.current_password" required type="password" autocomplete="current-password" placeholder="گذرواژه فعلی" class="w-full rounded-lg border border-divider px-4 py-3 outline-none focus:border-brand-red">
-                    <input v-model="form.password" required type="password" minlength="8" autocomplete="new-password" placeholder="گذرواژه جدید" class="w-full rounded-lg border border-divider px-4 py-3 outline-none focus:border-brand-red">
-                    <input v-model="form.password_confirmation" required type="password" minlength="8" autocomplete="new-password" placeholder="تکرار گذرواژه جدید" class="w-full rounded-lg border border-divider px-4 py-3 outline-none focus:border-brand-red">
+                    <label for="current-password" class="sr-only">گذرواژه فعلی</label><input id="current-password" v-model="form.current_password" required type="password" autocomplete="current-password" placeholder="گذرواژه فعلی" class="w-full rounded-lg border border-divider px-4 py-3 outline-none focus:border-brand-red">
+                    <label for="new-password" class="sr-only">گذرواژه جدید</label><input id="new-password" v-model="form.password" required type="password" minlength="8" autocomplete="new-password" placeholder="گذرواژه جدید" class="w-full rounded-lg border border-divider px-4 py-3 outline-none focus:border-brand-red">
+                    <label for="password-confirmation" class="sr-only">تکرار گذرواژه جدید</label><input id="password-confirmation" v-model="form.password_confirmation" required type="password" minlength="8" autocomplete="new-password" placeholder="تکرار گذرواژه جدید" class="w-full rounded-lg border border-divider px-4 py-3 outline-none focus:border-brand-red">
                     <button :disabled="saving" class="rounded-lg bg-navy px-5 py-3 text-sm font-bold text-white disabled:opacity-60">{{ saving ? 'در حال ذخیره...' : 'تغییر گذرواژه' }}</button>
                 </form>
             </div>

@@ -8,6 +8,7 @@ use App\Models\Tag;
 use App\Repositories\Contracts\TagRepositoryInterface;
 use App\Services\SlugService;
 use App\Support\ApiResponse;
+use Illuminate\Support\Facades\Cache;
 
 class TagController extends Controller
 {
@@ -18,7 +19,7 @@ class TagController extends Controller
 
     public function index()
     {
-        return ApiResponse::success(TagResource::collection($this->tags->all()));
+        return ApiResponse::success(TagResource::collection(Cache::remember('public:tags', 3600, fn () => $this->tags->all())));
     }
 
     public function show(string $slug)
@@ -32,7 +33,8 @@ class TagController extends Controller
         $data = $request->validated();
         $data['slug'] = $this->slugs->make($data['name'], Tag::class);
 
-        return ApiResponse::success(new TagResource(Tag::create($data)), [], 201);
+        $tag = Tag::create($data); Cache::forget('public:tags');
+        return ApiResponse::success(new TagResource($tag), [], 201);
     }
 
     public function update(StoreTagRequest $request, Tag $tag)
@@ -43,6 +45,7 @@ class TagController extends Controller
             $data['slug'] = $this->slugs->make($data['name'], Tag::class, $tag->id);
         }
         $tag->update($data);
+        Cache::forget('public:tags');
 
         return ApiResponse::success(new TagResource($tag->fresh()));
     }
@@ -51,6 +54,7 @@ class TagController extends Controller
     {
         $this->authorize('manage', Tag::class);
         $tag->delete();
+        Cache::forget('public:tags');
 
         return ApiResponse::success(['message' => __('messages.tag_deleted')]);
     }

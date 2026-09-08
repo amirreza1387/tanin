@@ -27,12 +27,17 @@ class MostViewedController extends Controller
                 ->limit(20)
                 ->pluck('article_id');
 
-            return Article::query()->with(['author', 'category', 'tags', 'featuredMedia'])
+            $articles = Article::query()->with(['author', 'category', 'tags', 'featuredMedia'])
                 ->whereIn('id', $ids)
                 ->where('status', 'published')
                 ->get()
                 ->sortBy(fn (Article $article) => $ids->search($article->id))
                 ->values();
+
+            return $articles->isNotEmpty()
+                ? $articles
+                : Article::query()->with(['author', 'category', 'tags', 'featuredMedia'])
+                    ->where('status', 'published')->orderByDesc('views')->latest('published_at')->limit(20)->get();
         });
 
         return ApiResponse::success(ArticleResource::collection($articles));

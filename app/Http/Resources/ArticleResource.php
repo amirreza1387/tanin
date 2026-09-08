@@ -28,6 +28,7 @@ class ArticleResource extends JsonResource
             'published_at_jalali' => JalaliDate::format($publishedAt),
             'views' => $this->views,
             'is_breaking' => $this->is_breaking,
+            'is_featured' => $this->is_featured,
             'takedown_note' => $this->when($request->user()?->isAdmin(), $this->takedown_note),
             'seo' => [
                 'meta_title' => $this->meta_title ?: $this->title,

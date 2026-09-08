@@ -3,19 +3,29 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../lib/api';
 import AdminLayout from '../components/AdminLayout.vue';
+import ConfirmDialog from '../components/ConfirmDialog.vue';
+import { firstError, notify } from '../lib/api';
+import Button from '../components/Button.vue';
+import Card from '../components/Card.vue';
+import StatusBadge from '../components/StatusBadge.vue';
+import ArticlesManager from '../components/admin/ArticlesManager.vue';
+import DashboardAnalytics from '../components/admin/DashboardAnalytics.vue';
+import AppSkeleton from '../components/AppSkeleton.vue';
 
 const route = useRoute();
 const section = computed(() => route.params.section || 'dashboard');
-const loading = ref(false); const saving = ref(false); const uploadProgress = ref(0); const message = ref(''); const error = ref('');
+const loading = ref(false); const uploadProgress = ref(0); const message = ref(''); const error = ref('');
+const confirmState = ref({ open: false, message: '', action: null });
 const articles = ref([]); const comments = ref([]); const users = ref([]); const categories = ref([]); const tags = ref([]); const media = ref([]); const advertisements = ref([]);
-const editing = ref(null); const showArticleForm = ref(false);
 const uploading = ref(false); const uploadPreview = ref(null); const uploadedMedia = ref(null);
-const articleForm = reactive({ title: '', lead: '', body: '', category_id: '', featured_media_id: '', tag_ids: [], meta_title: '', meta_description: '' });
 const categoryForm = reactive({ name: '', parent_id: '', sort_order: 0 }); const tagForm = reactive({ name: '' });
 const adForm = reactive({ title: '', placement: 'sidebar', media_id: '', link_url: '', is_active: true, starts_at: '', ends_at: '', sort_order: 0 });
 const editingAd = ref(null); const showAdForm = ref(false);
 const stats = computed(() => ({ articles: articles.value.length, comments: comments.value.length, users: users.value.length, categories: categories.value.length }));
-const notify = (text) => { message.value = text; setTimeout(() => message.value = '', 3000); };
+const announce = (text) => { message.value = text; notify(text); setTimeout(() => message.value = '', 3000); };
+const askConfirm = (message, action) => { confirmState.value = { open: true, message, action }; };
+const cancelConfirm = () => { confirmState.value = { open: false, message: '', action: null }; };
+const acceptConfirm = async () => { const action = confirmState.value.action; cancelConfirm(); if (action) await action(); };
 const load = async () => {
   loading.value = true; error.value = '';
   try {
@@ -29,19 +39,15 @@ const load = async () => {
   } catch (e) { error.value = e.response?.data?.errors?.message || 'دریافت اطلاعات پنل ناموفق بود.'; } finally { loading.value = false; }
 };
 onMounted(load); watch(section, load);
-const resetArticle = () => { Object.assign(articleForm, { title: '', lead: '', body: '', category_id: '', featured_media_id: '', tag_ids: [], meta_title: '', meta_description: '' }); editing.value = null; showArticleForm.value = true; };
-const editArticle = (article) => { editing.value = article; Object.assign(articleForm, { title: article.title, lead: article.lead || '', body: article.body || '', category_id: article.category?.id || '', featured_media_id: article.featured_media?.id || '', tag_ids: article.tags?.map((tag) => tag.id) || [], meta_title: article.seo?.meta_title || '', meta_description: article.seo?.meta_description || '' }); showArticleForm.value = true; };
-const saveArticle = async () => { try { if (editing.value) await api.put(`/articles/${editing.value.id}`, articleForm); else await api.post('/articles', articleForm); showArticleForm.value = false; notify('خبر با موفقیت ذخیره شد.'); await load(); } catch (e) { error.value = firstError(e); } };
-const articleAction = async (article, action) => { try { if (action === 'delete') await api.delete(`/articles/${article.id}`); else await api.post(`/articles/${article.id}/${action}`, action === 'breaking' ? { is_breaking: !article.is_breaking } : {}); notify('عملیات با موفقیت انجام شد.'); await load(); } catch (e) { error.value = firstError(e); } };
 const moderate = async (comment, status) => { try { await api.patch(`/management/comments/${comment.id}`, { status }); notify('وضعیت نظر تغییر کرد.'); await load(); } catch (e) { error.value = firstError(e); } };
 const saveCategory = async () => { try { await api.post('/categories', categoryForm); Object.assign(categoryForm, { name: '', parent_id: '', sort_order: 0 }); notify('دسته‌بندی اضافه شد.'); await load(); } catch (e) { error.value = firstError(e); } };
-const removeCategory = async (item) => { if (!confirm(`حذف «${item.name}»؟`)) return; await api.delete(`/categories/${item.id}`); await load(); };
+const removeCategory = async (item) => askConfirm(`حذف «${item.name}»؟`, async () => { try { await api.delete(`/categories/${item.id}`); announce('دسته‌بندی حذف شد.'); await load(); } catch (e) { error.value = firstError(e); notify(error.value, 'error'); } });
 const saveTag = async () => { try { await api.post('/tags', tagForm); tagForm.name = ''; notify('برچسب اضافه شد.'); await load(); } catch (e) { error.value = firstError(e); } };
-const removeTag = async (item) => { if (!confirm(`حذف «${item.name}»؟`)) return; await api.delete(`/tags/${item.id}`); await load(); };
+const removeTag = async (item) => askConfirm(`حذف «${item.name}»؟`, async () => { try { await api.delete(`/tags/${item.id}`); announce('برچسب حذف شد.'); await load(); } catch (e) { error.value = firstError(e); notify(error.value, 'error'); } });
 const resetAd = () => { Object.assign(adForm, { title: '', placement: 'sidebar', media_id: '', link_url: '', is_active: true, starts_at: '', ends_at: '', sort_order: 0 }); editingAd.value = null; showAdForm.value = true; };
 const editAd = (ad) => { editingAd.value = ad; Object.assign(adForm, { title: ad.title, placement: ad.placement, media_id: ad.media_id || '', link_url: ad.link_url || '', is_active: ad.is_active, starts_at: ad.starts_at ? ad.starts_at.slice(0, 16) : '', ends_at: ad.ends_at ? ad.ends_at.slice(0, 16) : '', sort_order: ad.sort_order || 0 }); showAdForm.value = true; };
 const saveAd = async () => { try { if (editingAd.value) await api.put(`/management/advertisements/${editingAd.value.id}`, adForm); else await api.post('/management/advertisements', adForm); showAdForm.value = false; notify('تبلیغ ذخیره شد.'); await load(); } catch (e) { error.value = firstError(e); } };
-const removeAd = async (ad) => { if (!confirm(`حذف «${ad.title}»؟`)) return; try { await api.delete(`/management/advertisements/${ad.id}`); notify('تبلیغ حذف شد.'); await load(); } catch (e) { error.value = firstError(e); } };
+const removeAd = async (ad) => askConfirm(`حذف «${ad.title}»؟`, async () => { try { await api.delete(`/management/advertisements/${ad.id}`); announce('تبلیغ حذف شد.'); await load(); } catch (e) { error.value = firstError(e); notify(error.value, 'error'); } });
 const placementLabel = { sidebar: 'سایدبار', horizontal: 'افقی', footer: 'فوتر' };
 const updateUser = async (user, role) => { await api.patch(`/management/users/${user.id}`, { role }); notify('نقش کاربر به‌روزرسانی شد.'); await load(); };
 const uploadMedia = async (event) => {
@@ -56,55 +62,27 @@ const uploadMedia = async (event) => {
     uploadedMedia.value = response.data.data;
     media.value = [response.data.data, ...media.value];
     notify('رسانه با موفقیت آپلود شد.');
-  } catch (e) { error.value = firstError(e); } finally { uploading.value = false; uploadProgress.value = 0; event.target.value = ''; }
+  } catch (e) { error.value = firstError(e); notify(error.value, 'error'); } finally { uploading.value = false; event.target.value = ''; }
 };
-const uploadArticleMedia = async (event) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) {
-    error.value = 'برای تصویر شاخص فقط فایل تصویری انتخاب کنید.';
-    event.target.value = '';
-    return;
-  }
-  uploading.value = true; error.value = '';
-  const data = new FormData(); data.append('file', file);
-  try {
-    const response = await api.post('/media', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-    const uploaded = response.data.data;
-    articleForm.featured_media_id = uploaded.id;
-    media.value = [uploaded, ...media.value.filter((item) => item.id !== uploaded.id)];
-    uploadPreview.value = uploaded.url;
-    notify('تصویر خبر آپلود و انتخاب شد.');
-  } catch (e) { error.value = firstError(e); } finally { uploading.value = false; event.target.value = ''; }
-};
-const firstError = (e) => Object.values(e.response?.data?.errors || {})[0]?.[0] || e.response?.data?.errors?.message || 'عملیات ناموفق بود.';
 const statusLabel = { draft: 'پیش‌نویس', published: 'منتشرشده', scheduled: 'زمان‌بندی‌شده' };
 </script>
 <template>
   <AdminLayout :section="section">
-    <div v-if="section === 'articles' && showArticleForm" class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-dashed border-brand-red/40 bg-red-50 p-3">
-      <span class="text-sm font-bold text-navy">{{ articleForm.featured_media_id ? 'تصویر شاخص انتخاب شده است.' : 'برای خبر تصویر شاخص انتخاب کنید.' }}</span>
-      <label class="cursor-pointer rounded-lg bg-brand-red px-3 py-2 text-xs font-bold text-white hover:bg-red-800">
-        آپلود تصویر
-        <input class="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/gif" :disabled="uploading" @change="uploadArticleMedia">
-      </label>
-    </div>
-    <div v-if="message" class="mb-4 rounded-lg bg-green-100 px-4 py-3 text-sm text-green-800">{{ message }}</div>
-    <div v-if="error" class="mb-4 rounded-lg bg-red-100 px-4 py-3 text-sm text-red-800">{{ error }}</div>
-    <div v-if="loading" class="rounded-2xl bg-white p-16 text-center text-muted">در حال دریافت اطلاعات...</div>
+    <div v-if="message" class="ds-alert ds-alert-success mb-4" role="status">{{ message }}</div>
+    <div v-if="error" class="ds-alert ds-alert-error mb-4" role="alert">{{ error }}</div>
+    <div v-if="uploading" class="mb-4 rounded-lg bg-white p-3 shadow-sm" aria-live="polite"><div class="mb-1 flex justify-between text-xs text-muted"><span>پیشرفت آپلود</span><span>{{ uploadProgress }}٪</span></div><progress class="h-2 w-full accent-brand-red" :value="uploadProgress" max="100">{{ uploadProgress }}%</progress></div>
+    <ConfirmDialog :open="confirmState.open" :message="confirmState.message" @cancel="cancelConfirm" @confirm="acceptConfirm" />
+    <AppSkeleton v-if="loading" :variant="section === 'articles' || section === 'comments' || section === 'users' ? 'table' : 'news-grid'" />
     <template v-else>
+      <DashboardAnalytics v-if="section === 'dashboard'" class="mb-6" />
       <div v-if="section === 'dashboard'" class="space-y-6">
         <div><h1 class="text-2xl font-black text-navy">نمای کلی سامانه</h1><p class="mt-1 text-sm text-muted">مدیریت محتوای طنین جنوب</p></div>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><RouterLink v-for="[key, label, value] in [['articles','اخبار',stats.articles],['comments','نظرات',stats.comments],['users','کاربران',stats.users],['categories','دسته‌بندی',stats.categories]]" :key="key" :to="`/admin/${key}`" class="rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-1"><div class="text-sm text-muted">{{ label }}</div><div class="mt-3 text-3xl font-black text-navy">{{ value }}</div></RouterLink></div>
-        <div class="rounded-2xl bg-white p-5"><div class="mb-4 flex items-center justify-between"><h2 class="font-black">آخرین اخبار</h2><RouterLink to="/admin/articles" class="text-xs text-brand-red">مشاهده همه</RouterLink></div><div class="space-y-2"><div v-for="article in articles.slice(0, 5)" :key="article.id" class="flex items-center justify-between border-b border-divider py-3 text-sm"><span class="truncate">{{ article.title }}</span><span class="mr-3 shrink-0 text-xs text-muted">{{ statusLabel[article.status] || article.status }}</span></div></div></div>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><RouterLink v-for="[key, label, value] in [['articles','اخبار',stats.articles],['comments','نظرات',stats.comments],['users','کاربران',stats.users],['categories','دسته‌بندی',stats.categories]]" :key="key" :to="`/admin/${key}`" class="ds-card p-5 transition hover:-translate-y-1 hover:shadow-md"><div class="text-sm text-muted">{{ label }}</div><div class="mt-3 text-3xl font-black text-navy">{{ value }}</div></RouterLink></div>
+        <Card><div class="mb-4 flex items-center justify-between"><h2 class="font-black">آخرین اخبار</h2><RouterLink to="/admin/articles" class="text-xs text-brand-red">مشاهده همه</RouterLink></div><div class="space-y-2"><div v-for="article in articles.slice(0, 5)" :key="article.id" class="flex items-center justify-between border-b border-divider py-3 text-sm"><span class="truncate">{{ article.title }}</span><StatusBadge class="mr-3 shrink-0" :status="article.status" :label="statusLabel[article.status] || article.status" /></div></div></Card>
       </div>
-      <div v-else-if="section === 'articles'" class="space-y-4">
-        <div class="flex items-center justify-between"><h1 class="text-2xl font-black text-navy">مدیریت اخبار</h1><button class="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white" @click="resetArticle">+ خبر جدید</button></div>
-        <div v-if="showArticleForm" class="rounded-2xl bg-white p-5 shadow-sm"><div class="mb-4 flex justify-between"><h2 class="font-black">{{ editing ? 'ویرایش خبر' : 'انتشار خبر جدید' }}</h2><button class="text-muted" @click="showArticleForm = false">×</button></div><form class="grid gap-4" @submit.prevent="saveArticle"><input v-model="articleForm.title" required class="rounded-lg border border-divider px-3 py-3" placeholder="عنوان خبر"><textarea v-model="articleForm.lead" class="rounded-lg border border-divider px-3 py-3" rows="2" placeholder="خلاصه خبر"></textarea><textarea v-model="articleForm.body" required class="rounded-lg border border-divider px-3 py-3" rows="8" placeholder="متن کامل خبر"></textarea><select v-model="articleForm.category_id" class="rounded-lg border border-divider px-3 py-3"><option value="">بدون دسته‌بندی</option><option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option></select><div><label class="mb-2 block text-sm font-bold text-navy">تصویر شاخص خبر</label><select v-model="articleForm.featured_media_id" class="w-full rounded-lg border border-divider px-3 py-3"><option value="">بدون تصویر شاخص</option><option v-for="item in media.filter((item) => item.type === 'image')" :key="item.id" :value="item.id">{{ item.original_name }}</option></select><div v-if="articleForm.featured_media_id" class="mt-3 h-36 overflow-hidden rounded-lg bg-cream"><img :src="media.find((item) => item.id == articleForm.featured_media_id)?.url" class="h-full w-full object-contain"></div><RouterLink to="/admin/media" target="_blank" class="mt-2 inline-block text-xs font-bold text-brand-red">آپلود رسانه جدید ←</RouterLink></div><div class="flex flex-wrap gap-2"><label v-for="tag in tags" :key="tag.id" class="rounded-full bg-cream px-3 py-2 text-xs"><input v-model="articleForm.tag_ids" type="checkbox" :value="tag.id" class="ml-1">{{ tag.name }}</label></div><div class="flex gap-2"><button class="rounded-lg bg-brand-red px-5 py-3 text-sm font-bold text-white">ذخیره خبر</button><button type="button" class="rounded-lg border border-divider px-5 py-3 text-sm" @click="showArticleForm = false">انصراف</button></div></form></div>
-        <div class="overflow-x-auto rounded-2xl bg-white shadow-sm"><table class="w-full min-w-[760px] text-right text-sm"><thead class="bg-[#FAF8F5] text-xs text-muted"><tr><th class="p-4">عنوان</th><th class="p-4">وضعیت</th><th class="p-4">بازدید</th><th class="p-4">عملیات</th></tr></thead><tbody><tr v-for="article in articles" :key="article.id" class="border-t border-divider"><td class="max-w-sm p-4 font-bold">{{ article.title }}</td><td class="p-4"><span class="rounded-full bg-cream px-2 py-1 text-xs">{{ statusLabel[article.status] || article.status }}</span></td><td class="p-4 text-muted">{{ article.views }}</td><td class="p-4"><div class="flex flex-wrap items-center gap-2"><button class="inline-flex items-center rounded-lg border border-navy/20 bg-white px-3 py-2 text-xs font-bold text-navy shadow-sm transition hover:border-navy hover:bg-navy hover:text-white" @click="editArticle(article)">ویرایش</button><button v-if="article.status !== 'published'" class="inline-flex items-center rounded-lg bg-green-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-green-800" @click="articleAction(article, 'publish')">انتشار</button><button v-if="article.status === 'published'" class="inline-flex items-center rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600" @click="articleAction(article, 'revert')">بازگردانی به پیش‌نویس</button><button class="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-700 hover:text-white" @click="articleAction(article, 'delete')">حذف</button></div></td></tr></tbody></table></div>
-      </div>
+      <ArticlesManager v-else-if="section === 'articles'" />
       <div v-else-if="section === 'comments'" class="rounded-2xl bg-white p-5"><h1 class="mb-5 text-2xl font-black text-navy">مدیریت نظرات</h1><div v-for="comment in comments" :key="comment.id" class="border-b border-divider py-4 last:border-0"><div class="flex justify-between text-xs text-muted"><span>{{ comment.user?.name }} · {{ comment.article?.title }}</span><span>{{ comment.status_label || comment.status }}</span></div><p class="my-2 text-sm leading-7">{{ comment.body }}</p><button v-if="comment.status !== 'approved'" class="ml-3 text-sm font-bold text-green-700" @click="moderate(comment, 'approved')">تأیید</button><button v-if="comment.status !== 'rejected'" class="text-sm font-bold text-red-700" @click="moderate(comment, 'rejected')">رد</button></div></div>
-      <div v-else-if="section === 'users'" class="overflow-x-auto rounded-2xl bg-white"><table class="w-full min-w-[600px] text-right text-sm"><thead class="bg-[#FAF8F5] text-xs text-muted"><tr><th class="p-4">نام</th><th class="p-4">ایمیل</th><th class="p-4">نقش</th></tr></thead><tbody><tr v-for="user in users" :key="user.id" class="border-t border-divider"><td class="p-4 font-bold">{{ user.name }}</td><td class="p-4 text-left">{{ user.email }}</td><td class="p-4"><select :value="user.role" class="rounded border border-divider p-2 text-xs" @change="updateUser(user, $event.target.value)"><option value="user">کاربر</option><option value="reporter">خبرنگار</option><option value="admin">مدیر</option></select></td></tr></tbody></table></div>
+      <Card v-else-if="section === 'users'" :padded="false" class="overflow-x-auto"><table class="ds-table ds-table-mobile-cards min-w-[600px] md:min-w-0"><thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th></tr></thead><tbody><tr v-for="user in users" :key="user.id"><td data-label="نام" class="ds-title-safe font-bold">{{ user.name }}</td><td data-label="ایمیل" class="break-all text-left">{{ user.email }}</td><td data-label="نقش"><select :value="user.role" class="ds-control max-w-36 py-2 text-xs" @change="updateUser(user, $event.target.value)"><option value="user">کاربر</option><option value="reporter">خبرنگار</option><option value="admin">مدیر</option></select></td></tr></tbody></table></Card>
       <div v-else-if="section === 'categories'" class="space-y-4"><h1 class="text-2xl font-black text-navy">دسته‌بندی‌ها</h1><form class="flex flex-wrap gap-2 rounded-xl bg-white p-4" @submit.prevent="saveCategory"><input v-model="categoryForm.name" required class="rounded-lg border border-divider px-3 py-2" placeholder="نام دسته‌بندی"><input v-model="categoryForm.sort_order" type="number" class="w-24 rounded-lg border border-divider px-3 py-2" placeholder="ترتیب"><button class="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white">افزودن</button></form><div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><div v-for="cat in categories" :key="cat.id" class="flex items-center justify-between rounded-xl bg-white p-4"><span class="font-bold">{{ cat.name }}</span><button class="text-sm text-red-700" @click="removeCategory(cat)">حذف</button></div></div></div>
       <div v-else-if="section === 'tags'" class="space-y-4"><h1 class="text-2xl font-black text-navy">برچسب‌ها</h1><form class="flex gap-2 rounded-xl bg-white p-4" @submit.prevent="saveTag"><input v-model="tagForm.name" required class="flex-1 rounded-lg border border-divider px-3 py-2" placeholder="نام برچسب"><button class="rounded-lg bg-brand-red px-4 py-2 text-sm font-bold text-white">افزودن</button></form><div class="flex flex-wrap gap-3"><div v-for="tag in tags" :key="tag.id" class="flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-sm"><span>{{ tag.name }}</span><button class="text-red-700" @click="removeTag(tag)">×</button></div></div></div>
       <div v-else-if="section === 'media'" class="space-y-5"><div class="rounded-2xl bg-white p-6"><h1 class="text-2xl font-black text-navy">مدیریت رسانه</h1><p class="mt-2 text-sm leading-7 text-muted">تصویر یا ویدیوی خود را انتخاب کنید. حداکثر حجم فایل ۱۰۰ مگابایت است.</p><label class="mt-6 flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-divider bg-[#FAF8F5] p-6 text-center transition hover:border-brand-red hover:bg-red-50"><input class="sr-only" type="file" accept="image/*,video/*" :disabled="uploading" @change="uploadMedia"><span class="text-4xl text-brand-red">↑</span><span class="mt-2 font-bold">{{ uploading ? 'در حال آپلود...' : 'برای انتخاب فایل کلیک کنید' }}</span><span class="mt-1 text-xs text-muted">JPG، PNG، WEBP، GIF، MP4، MOV، AVI یا WEBM</span></label><div v-if="uploadPreview || uploadedMedia" class="mt-6 rounded-xl border border-divider p-4"><img v-if="uploadPreview" :src="uploadPreview" class="max-h-64 w-full rounded-lg object-contain"><video v-else-if="uploadedMedia?.type === 'video'" :src="uploadedMedia.url" controls class="max-h-64 w-full rounded-lg"></video><div v-if="uploadedMedia" class="mt-4 flex flex-wrap items-center justify-between gap-3"><span class="text-sm font-bold text-green-700">آپلود موفق بود · {{ uploadedMedia.original_name }}</span><a :href="uploadedMedia.url" target="_blank" rel="noopener" class="rounded-lg bg-navy px-3 py-2 text-xs font-bold text-white">مشاهده رسانه</a></div></div></div><div class="rounded-2xl bg-white p-5"><h2 class="mb-4 font-black text-navy">رسانه‌های آپلودشده</h2><div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"><div v-for="item in media" :key="item.id" class="overflow-hidden rounded-xl border border-divider bg-[#FAF8F5]"><img v-if="item.type === 'image'" :src="item.url" :alt="item.original_name" class="aspect-square w-full object-cover"><video v-else :src="item.url" class="aspect-square w-full object-cover"></video><div class="truncate p-2 text-xs" :title="item.original_name">{{ item.original_name }}</div></div></div></div></div>

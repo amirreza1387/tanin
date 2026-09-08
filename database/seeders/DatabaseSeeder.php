@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
             'sort_order' => 1,
         ]);
 
-        $tags = collect(['اهواز', 'خبر فوری', 'جامعه', 'اقتصاد'])
+        $tags = collect(['اهواز', 'خبر فوری', 'جامعه', 'اقتصاد', 'پیشنهاد سردبیر'])
             ->map(fn (string $name) => Tag::create(['name' => $name, 'slug' => $name]));
 
         $published = Article::create([

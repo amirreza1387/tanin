@@ -18,7 +18,7 @@ class Article extends Model
     protected $fillable = [
         'author_id', 'category_id', 'featured_media_id', 'title', 'slug',
         'lead', 'body', 'status', 'publish_at', 'published_at', 'meta_title',
-        'meta_description', 'canonical_path', 'views', 'is_breaking',
+        'meta_description', 'canonical_path', 'views', 'is_breaking', 'is_featured',
         'takedown_note',
     ];
 
@@ -29,6 +29,7 @@ class Article extends Model
             'publish_at' => 'datetime',
             'published_at' => 'datetime',
             'is_breaking' => 'boolean',
+            'is_featured' => 'boolean',
             'views' => 'integer',
         ];
     }
