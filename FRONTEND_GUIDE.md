@@ -1,4 +1,4 @@
-# راهنمای اتصال فرانت‌اند به API صدای جنوب
+# راهنمای اتصال فرانت‌اند به API طنین جنوب
 
 ## مبنای اتصال
 
@@ -659,25 +659,25 @@ Accept: application/json
 
 | صفحه | Endpointهای اصلی | الگوی `<title>` |
 |---|---|---|
-| صفحه اصلی | `/articles`، `/breaking-news`، `/most-viewed?period=today`، `/categories` | `صدای جنوب | آخرین اخبار جنوب` |
-| صفحه دسته‌بندی | `/categories/{slug}`، `/articles?category_slug={slug}` | `اخبار {نام دسته} | صدای جنوب` |
-| صفحه خبر | `/articles/{slug}`، `/articles/{article}/comments` | `{عنوان خبر} | صدای جنوب` |
-| صفحه برچسب | `/tags/{slug}` | `برچسب {نام برچسب} | صدای جنوب` |
-| نتایج جست‌وجو | `/search?q={query}` | `جست‌وجو برای «{query}» | صدای جنوب` |
-| اخبار فوری | `/breaking-news` | `اخبار فوری | صدای جنوب` |
-| پربازدیدترین‌ها | `/most-viewed?period=today` یا `week` | `پربازدیدترین اخبار | صدای جنوب` |
-| ورود | `/auth/login` | `ورود | صدای جنوب` |
-| ثبت‌نام | `/auth/register` | `ثبت‌نام | صدای جنوب` |
-| پروفایل کاربر | `/auth/me`، `/auth/password` | `پروفایل کاربر | صدای جنوب` |
-| داشبورد خبرنگار | `/management/articles`، `/articles`، `/media` | `داشبورد خبرنگار | صدای جنوب` |
-| مقالات من | `/management/articles` | `مقالات من | صدای جنوب` |
-| انتشار خبر جدید | `POST /articles`، `POST /media` | `انتشار خبر جدید | صدای جنوب` |
-| داشبورد مدیر | `/management/articles`، `/management/comments`، `/management/users`، `/categories`، `/tags`، `/media` | `داشبورد مدیریت | صدای جنوب` |
-| مدیریت اخبار | `/management/articles`، مسیرهای publish/schedule/revert/breaking | `مدیریت اخبار | صدای جنوب` |
-| مدیریت نظرات | `/management/comments` | `مدیریت نظرات | صدای جنوب` |
-| مدیریت دسته‌بندی و برچسب | `/categories`، `/tags` و مسیرهای مدیریتی آن‌ها | `دسته‌بندی‌ها و برچسب‌ها | صدای جنوب` |
-| مدیریت رسانه | `POST /media` | `رسانه‌ها | صدای جنوب` |
-| مدیریت کاربران | `/management/users` | `کاربران | صدای جنوب` |
+| صفحه اصلی | `/articles`، `/breaking-news`، `/most-viewed?period=today`، `/categories` | `طنین جنوب | آخرین اخبار جنوب` |
+| صفحه دسته‌بندی | `/categories/{slug}`، `/articles?category_slug={slug}` | `اخبار {نام دسته} | طنین جنوب` |
+| صفحه خبر | `/articles/{slug}`، `/articles/{article}/comments` | `{عنوان خبر} | طنین جنوب` |
+| صفحه برچسب | `/tags/{slug}` | `برچسب {نام برچسب} | طنین جنوب` |
+| نتایج جست‌وجو | `/search?q={query}` | `جست‌وجو برای «{query}» | طنین جنوب` |
+| اخبار فوری | `/breaking-news` | `اخبار فوری | طنین جنوب` |
+| پربازدیدترین‌ها | `/most-viewed?period=today` یا `week` | `پربازدیدترین اخبار | طنین جنوب` |
+| ورود | `/auth/login` | `ورود | طنین جنوب` |
+| ثبت‌نام | `/auth/register` | `ثبت‌نام | طنین جنوب` |
+| پروفایل کاربر | `/auth/me`، `/auth/password` | `پروفایل کاربر | طنین جنوب` |
+| داشبورد خبرنگار | `/management/articles`، `/articles`، `/media` | `داشبورد خبرنگار | طنین جنوب` |
+| مقالات من | `/management/articles` | `مقالات من | طنین جنوب` |
+| انتشار خبر جدید | `POST /articles`، `POST /media` | `انتشار خبر جدید | طنین جنوب` |
+| داشبورد مدیر | `/management/articles`، `/management/comments`، `/management/users`، `/categories`، `/tags`، `/media` | `داشبورد مدیریت | طنین جنوب` |
+| مدیریت اخبار | `/management/articles`، مسیرهای publish/schedule/revert/breaking | `مدیریت اخبار | طنین جنوب` |
+| مدیریت نظرات | `/management/comments` | `مدیریت نظرات | طنین جنوب` |
+| مدیریت دسته‌بندی و برچسب | `/categories`، `/tags` و مسیرهای مدیریتی آن‌ها | `دسته‌بندی‌ها و برچسب‌ها | طنین جنوب` |
+| مدیریت رسانه | `POST /media` | `رسانه‌ها | طنین جنوب` |
+| مدیریت کاربران | `/management/users` | `کاربران | طنین جنوب` |
 
 ## پیشنهاد فنی برای فرانت‌اند
 
