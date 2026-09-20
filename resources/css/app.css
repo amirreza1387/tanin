@@ -124,6 +124,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* Editorial motion and visual language */
 .site-header { border-bottom: 1px solid rgb(224 217 207 / .8); background: rgb(255 255 255 / .94); transition: background 220ms ease, box-shadow 220ms ease, backdrop-filter 220ms ease; }
+body.mobile-navigation-open { overflow: hidden; }
 .site-header { isolation: isolate; }
 .site-header-inner > * { position: relative; z-index: 2; pointer-events: auto; }
 .header-action { cursor: pointer; touch-action: manipulation; }

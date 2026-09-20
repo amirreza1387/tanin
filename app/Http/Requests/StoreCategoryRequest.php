@@ -10,6 +10,7 @@ class StoreCategoryRequest extends ApiRequest
             'name' => ['required', 'string', 'max:120'],
             'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
+            'show_on_home' => ['sometimes', 'boolean'],
         ];
     }
 }

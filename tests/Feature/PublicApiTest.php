@@ -81,3 +81,15 @@ it('returns category trees and cached breaking news', function (): void {
         ->assertOk()
         ->assertJsonCount(1, 'data');
 });
+
+it('shows only selected categories in home sections', function (): void {
+    $selected = Category::factory()->create(['show_on_home' => true, 'sort_order' => 1]);
+    $hidden = Category::factory()->create(['show_on_home' => false, 'sort_order' => 0]);
+    Article::factory()->published()->create(['category_id' => $selected->id]);
+    Article::factory()->published()->create(['category_id' => $hidden->id]);
+
+    $this->getJson('/api/v1/home-sections')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.category.slug', $selected->slug);
+});

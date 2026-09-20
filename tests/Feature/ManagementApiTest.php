@@ -30,14 +30,34 @@ it('allows an admin to manage categories, tags, and users', function (): void {
         ->assertJsonPath('data.role', 'reporter');
 
     $this->actingAs($admin, 'sanctum')
-        ->putJson("/api/v1/categories/{$category['id']}", ['name' => 'استان‌های جنوبی'])
+        ->putJson("/api/v1/categories/{$category['id']}", ['name' => 'استان‌های جنوبی', 'show_on_home' => true])
         ->assertOk()
-        ->assertJsonPath('data.name', 'استان‌های جنوبی');
+        ->assertJsonPath('data.name', 'استان‌های جنوبی')
+        ->assertJsonPath('data.show_on_home', true);
 
     $this->actingAs($admin, 'sanctum')
         ->putJson("/api/v1/tags/{$tag['id']}", ['name' => 'خبر ویژه جنوب'])
         ->assertOk()
         ->assertJsonPath('data.name', 'خبر ویژه جنوب');
+});
+
+it('paginates and filters articles in the management list', function (): void {
+    $admin = User::factory()->admin()->create();
+    Article::factory()->count(3)->create(['author_id' => $admin->id, 'status' => 'draft']);
+    $published = Article::factory()->published()->create(['author_id' => $admin->id, 'title' => 'گزارش ویژه جنوب']);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/management/articles?per_page=2&page=2')
+        ->assertOk()
+        ->assertJsonPath('meta.current_page', 2)
+        ->assertJsonPath('meta.last_page', 2)
+        ->assertJsonCount(2, 'data');
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/management/articles?q=گزارش&status=published')
+        ->assertOk()
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('data.0.id', $published->id);
 });
 
 it('prevents non-admins from managing categories, tags, users, and comment queues', function (): void {

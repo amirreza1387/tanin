@@ -7,6 +7,7 @@ defineProps({ name: { type: String, required: true }, size: { type: [String, Num
     <path v-else-if="name === 'search'" d="m21 21-4.4-4.4M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z" />
     <path v-else-if="name === 'plus'" d="M12 5v14M5 12h14" />
     <path v-else-if="name === 'close'" d="m6 6 12 12M18 6 6 18" />
+    <path v-else-if="name === 'chevron-down'" d="m6 9 6 6 6-6" />
     <path v-else-if="name === 'upload'" d="M12 16V4m0 0-5 5m5-5 5 5M5 14v5h14v-5" />
     <path v-else-if="name === 'arrow-up'" d="M12 19V5m0 0-6 6m6-6 6 6" />
     <g v-else-if="name === 'weather-sun'"><circle cx="12" cy="12" r="3.5" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></g>

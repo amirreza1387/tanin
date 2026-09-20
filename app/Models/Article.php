@@ -44,6 +44,11 @@ class Article extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class)->orderBy('sort_order');
+    }
+
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);

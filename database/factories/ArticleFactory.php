@@ -32,6 +32,15 @@ class ArticleFactory extends Factory
         ];
     }
 
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Article $article): void {
+            if ($article->category_id) {
+                $article->categories()->syncWithoutDetaching([$article->category_id]);
+            }
+        });
+    }
+
     public function published(): static
     {
         return $this->state([

@@ -14,6 +14,8 @@ class StoreArticleRequest extends ApiRequest
             'lead' => ['nullable', 'string', 'max:1000'],
             'body' => ['required', 'string'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'category_ids' => ['sometimes', 'array'],
+            'category_ids.*' => ['integer', 'distinct', 'exists:categories,id'],
             'featured_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'tag_ids' => ['sometimes', 'array'],
             'tag_ids.*' => ['integer', 'exists:tags,id'],

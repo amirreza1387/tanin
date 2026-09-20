@@ -15,6 +15,7 @@ class CategoryResource extends JsonResource
             'slug' => $this->slug,
             'parent_id' => $this->parent_id,
             'sort_order' => $this->sort_order,
+            'show_on_home' => $this->show_on_home,
             'articles' => ArticleResource::collection($this->whenLoaded('articles')),
             'children' => CategoryResource::collection($this->whenLoaded('children')),
         ];

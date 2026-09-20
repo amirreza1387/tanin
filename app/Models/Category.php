@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['parent_id', 'name', 'slug', 'sort_order'];
+    protected $fillable = ['parent_id', 'name', 'slug', 'sort_order', 'show_on_home'];
 
     protected function casts(): array
     {
-        return ['sort_order' => 'integer'];
+        return ['sort_order' => 'integer', 'show_on_home' => 'boolean'];
     }
 
     public function parent(): BelongsTo
@@ -31,5 +32,10 @@ class Category extends Model
     public function articles(): HasMany
     {
         return $this->hasMany(Article::class);
+    }
+
+    public function categorizedArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class);
     }
 }

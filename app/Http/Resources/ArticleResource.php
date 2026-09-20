@@ -53,6 +53,7 @@ class ArticleResource extends JsonResource
             ],
             'author' => new UserResource($this->whenLoaded('author')),
             'category' => new CategoryResource($this->whenLoaded('category')),
+            'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'tags' => TagResource::collection($this->whenLoaded('tags')),
             'featured_media' => new MediaResource($this->whenLoaded('featuredMedia')),
             'comments' => CommentResource::collection($this->whenLoaded('comments')),

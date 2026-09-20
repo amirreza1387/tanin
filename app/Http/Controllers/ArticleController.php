@@ -53,7 +53,7 @@ class ArticleController extends Controller
 
     public function featured()
     {
-        $article = Article::query()->with(['author', 'category', 'tags', 'featuredMedia'])
+        $article = Article::query()->with(['author', 'category', 'categories', 'tags', 'featuredMedia'])
             ->where('status', 'published')->where('is_featured', true)->latest('updated_at')->first();
 
         return ApiResponse::success($article ? new ArticleResource($article) : null);
@@ -61,7 +61,7 @@ class ArticleController extends Controller
 
     public function editorPicks()
     {
-        $articles = Article::query()->with(['author', 'category', 'tags', 'featuredMedia'])
+        $articles = Article::query()->with(['author', 'category', 'categories', 'tags', 'featuredMedia'])
             ->where('status', 'published')
             ->whereHas('tags', fn ($query) => $query->where('name', 'پیشنهاد سردبیر'))
             ->latest('published_at')->limit(4)->get();
@@ -72,10 +72,15 @@ class ArticleController extends Controller
     public function homeSections()
     {
         $sections = Category::query()
-            ->whereHas('articles', fn ($query) => $query->where('status', 'published')->whereNotNull('published_at'))
-            ->orderBy('sort_order')->limit(4)->get()->map(function (Category $category) {
-                $articles = Article::query()->with(['author', 'category', 'tags', 'featuredMedia'])
-                    ->where('status', 'published')->where('category_id', $category->id)->latest('published_at')->limit(4)->get();
+            ->where('show_on_home', true)
+            ->where(fn ($query) => $query
+                ->whereHas('articles', fn ($articles) => $articles->where('status', 'published')->whereNotNull('published_at'))
+                ->orWhereHas('categorizedArticles', fn ($articles) => $articles->where('status', 'published')->whereNotNull('published_at')))
+            ->orderBy('sort_order')->get()->map(function (Category $category) {
+                $articles = Article::query()->with(['author', 'category', 'categories', 'tags', 'featuredMedia'])
+                    ->where('status', 'published')
+                    ->where(fn ($query) => $query->where('category_id', $category->id)->orWhereHas('categories', fn ($categories) => $categories->whereKey($category->id)))
+                    ->latest('published_at')->limit(4)->get();
                 return ['category' => ['name' => $category->name, 'slug' => $category->slug], 'articles' => ArticleResource::collection($articles)];
             });
 
@@ -157,6 +162,11 @@ class ArticleController extends Controller
             ? $this->articles->queryForManagement()
             : $this->articles->queryForManagement($user->id);
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
+        $search = trim((string) $request->query('q', ''));
+        $status = $request->string('status')->toString();
+
+        $query->when($search !== '', fn ($builder) => $builder->where('title', 'like', "%{$search}%"));
+        $query->when(in_array($status, ['draft', 'published', 'scheduled'], true), fn ($builder) => $builder->where('status', $status));
 
         return ApiResponse::paginated(ArticleResource::class, $query->paginate($perPage));
     }

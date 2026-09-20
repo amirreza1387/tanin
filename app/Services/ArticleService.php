@@ -22,10 +22,11 @@ class ArticleService
             $this->fill($article, $data, $author);
             $article->save();
 
+            $this->syncCategories($article, $data);
             $this->syncTags($article, $data['tag_ids'] ?? []);
             $this->applyRequestedStatus($article, $data);
 
-            return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+            return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
         });
     }
 
@@ -38,8 +39,9 @@ class ArticleService
             if (array_key_exists('tag_ids', $data)) {
                 $this->syncTags($article, $data['tag_ids']);
             }
+            $this->syncCategories($article, $data);
 
-            return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+            return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
         });
     }
 
@@ -58,7 +60,7 @@ class ArticleService
 
         ArticlePublished::dispatch($article->fresh());
 
-        return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+        return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
     }
 
     public function schedule(Article $article, Carbon $publishAt): Article
@@ -73,7 +75,7 @@ class ArticleService
             'published_at' => null,
         ])->save();
 
-        return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+        return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
     }
 
     public function revertToDraft(Article $article, ?string $note = null): Article
@@ -88,7 +90,7 @@ class ArticleService
 
         ArticleUnpublished::dispatch($article->fresh());
 
-        return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+        return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
     }
 
     public function setBreaking(Article $article, bool $isBreaking): Article
@@ -96,7 +98,7 @@ class ArticleService
         $article->update(['is_breaking' => $isBreaking]);
         BreakingNewsChanged::dispatch();
 
-        return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+        return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
     }
 
     public function setFeatured(Article $article, bool $isFeatured): Article
@@ -110,7 +112,7 @@ class ArticleService
                 Article::query()->where('is_featured', true)->whereKeyNot($article->id)->update(['is_featured' => false]);
             }
             $article->update(['is_featured' => $isFeatured]);
-            return $article->fresh(['author', 'category', 'tags', 'featuredMedia']);
+            return $article->fresh(['author', 'category', 'categories', 'tags', 'featuredMedia']);
         });
     }
 
@@ -164,6 +166,20 @@ class ArticleService
     private function syncTags(Article $article, array $tagIds): void
     {
         $article->tags()->sync($tagIds);
+    }
+
+    private function syncCategories(Article $article, array $data): void
+    {
+        if (!array_key_exists('category_ids', $data) && !array_key_exists('category_id', $data)) {
+            return;
+        }
+
+        $categoryIds = array_key_exists('category_ids', $data)
+            ? array_values(array_unique(array_filter($data['category_ids'] ?? [])))
+            : array_filter([$data['category_id']]);
+
+        $article->categories()->sync($categoryIds);
+        $article->forceFill(['category_id' => $categoryIds[0] ?? null])->save();
     }
 
     private function applyRequestedStatus(Article $article, array $data): void

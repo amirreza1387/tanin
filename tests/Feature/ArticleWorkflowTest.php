@@ -3,6 +3,7 @@
 use App\Enums\ArticleStatus;
 use App\Enums\Role;
 use App\Models\Article;
+use App\Models\Category;
 use App\Models\User;
 use App\Services\ArticleService;
 use Illuminate\Support\Carbon;
@@ -23,6 +24,24 @@ it('lets a reporter publish and schedule their own article', function (): void {
         ->postJson("/api/v1/articles/{$scheduled->id}/schedule", ['publish_at' => $publishAt])
         ->assertOk()
         ->assertJsonPath('data.status', ArticleStatus::SCHEDULED->value);
+});
+
+it('assigns multiple categories to an article and keeps the first as its primary category', function (): void {
+    $reporter = User::factory()->reporter()->create();
+    $firstCategory = Category::factory()->create();
+    $secondCategory = Category::factory()->create();
+
+    $response = $this->actingAs($reporter, 'sanctum')
+        ->postJson('/api/v1/articles', [
+            'title' => 'خبر چنددسته‌ای',
+            'body' => 'متن خبر',
+            'category_ids' => [$firstCategory->id, $secondCategory->id],
+        ])
+        ->assertCreated();
+
+    $article = Article::findOrFail($response->json('data.id'));
+    expect($article->category_id)->toBe($firstCategory->id)
+        ->and($article->categories()->pluck('categories.id')->sort()->values()->all())->toBe([$firstCategory->id, $secondCategory->id]);
 });
 
 it('prevents a reporter from changing another reporter article', function (): void {
