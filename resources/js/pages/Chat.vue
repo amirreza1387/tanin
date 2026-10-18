@@ -711,7 +711,6 @@ onUnmounted(() => {
                 <button class="chat-head-button" type="button" aria-label="تنظیمات" title="تنظیمات" @click="showSettings = true">⚙</button>
             </div>
         </div>
-        <div class="chat-disclosure">پیام‌ها و فایل‌ها هنگام ذخیره‌سازی رمزنگاری می‌شوند. ادمین مجاز سایت امکان خواندن گفتگوها را دارد.</div>
         <div v-if="error" class="chat-error" role="alert">{{ error }}<button @click="error = ''" aria-label="بستن">×</button></div>
         <div class="chat-layout" :class="{ 'has-selected': !!selected }">
             <aside class="chat-sidebar">
@@ -805,7 +804,6 @@ onUnmounted(() => {
                 </label>
                 <div class="chat-settings-section-title">حساب کاربری</div>
                 <button class="chat-setting-row chat-setting-action" type="button" @click="showSettings = false; showProfile = true"><span class="chat-setting-icon">●</span><span class="chat-setting-copy"><b>پروفایل</b><small>مشاهدهٔ اطلاعات حساب</small></span><span class="chat-setting-chevron">‹</span></button>
-                <div class="chat-settings-footnote">پیام‌ها و فایل‌ها هنگام ذخیره‌سازی رمزنگاری می‌شوند و مدیر مجاز سایت امکان خواندن گفتگوها را دارد. تنظیمات ظاهر فقط روی همین دستگاه ذخیره می‌شوند.</div>
             </section>
         </div>
     </section>
