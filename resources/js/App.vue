@@ -28,7 +28,7 @@ onUnmounted(() => window.removeEventListener('tanin:auth-expired', handleAuthExp
         <TheNavbar v-if="!isPrivateChat" />
         <main :class="isPrivateChat ? 'private-chat-main' : ''"><RouterView /></main>
         <Toast />
-        <MusicPlayer />
+        <MusicPlayer v-if="isPrivateChat" />
         <footer v-if="!isPrivateChat" class="mt-16 bg-navy text-[#F7F4EF]">
             <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
                 <div>
