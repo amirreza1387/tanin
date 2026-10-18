@@ -9,6 +9,7 @@ const Profile = () => import('./pages/Profile.vue');
 const Admin = () => import('./pages/Admin.vue');
 const Forbidden = () => import('./pages/Forbidden.vue');
 const NotFound = () => import('./pages/NotFound.vue');
+const Chat = () => import('./pages/Chat.vue');
 
 const router = createRouter({
     history: createWebHistory(),
@@ -24,6 +25,8 @@ const router = createRouter({
         { path: '/login', component: Auth, props: { mode: 'login' } },
         { path: '/register', component: Auth, props: { mode: 'register' } },
         { path: '/profile', component: Profile },
+        { path: '/private-messages-7f3a', component: Chat, meta: { requiresAuth: true } },
+        { path: '/admin/private-messages-7f3a', component: Chat, meta: { requiresAdmin: true, adminInbox: true } },
         { path: '/forbidden', component: Forbidden },
         { path: '/admin', component: Admin, meta: { requiresAdmin: true } },
         { path: '/admin/:section', component: Admin, meta: { requiresAdmin: true } },
@@ -32,11 +35,12 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-    if (!to.meta.requiresAdmin) return true;
+    if (!to.meta.requiresAdmin && !to.meta.requiresAuth) return true;
     const auth = useAuthStore();
     if (!auth.user) await auth.me();
     if (!auth.user) return { path: '/login', query: { redirect: to.fullPath } };
-    return auth.isAdmin ? true : { path: '/forbidden', replace: true };
+    if (to.meta.requiresAdmin && !auth.isAdmin) return { path: '/forbidden', replace: true };
+    return true;
 });
 
 export default router;

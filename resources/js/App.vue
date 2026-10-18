@@ -1,12 +1,14 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import TheNavbar from './components/TheNavbar.vue';
 import Toast from './components/Toast.vue';
+import MusicPlayer from './components/MusicPlayer.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
+const isPrivateChat = computed(() => router.currentRoute.value.path.startsWith('/private-messages-7f3a') || router.currentRoute.value.path.startsWith('/admin/private-messages-7f3a'));
 const handleAuthExpired = () => {
     auth.logoutLocal();
     if (router.currentRoute.value.path !== '/login') {
@@ -22,11 +24,12 @@ onUnmounted(() => window.removeEventListener('tanin:auth-expired', handleAuthExp
 </script>
 
 <template>
-    <div dir="rtl" class="min-h-screen bg-cream text-[#1A1A1A]">
-        <TheNavbar />
-        <main><RouterView /></main>
+    <div dir="rtl" :class="isPrivateChat ? 'private-chat-app' : 'min-h-screen bg-cream text-[#1A1A1A]'">
+        <TheNavbar v-if="!isPrivateChat" />
+        <main :class="isPrivateChat ? 'private-chat-main' : ''"><RouterView /></main>
         <Toast />
-        <footer class="mt-16 bg-navy text-[#F7F4EF]">
+        <MusicPlayer />
+        <footer v-if="!isPrivateChat" class="mt-16 bg-navy text-[#F7F4EF]">
             <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 md:grid-cols-4">
                 <div>
                     <div class="mb-3 text-xl font-black">طنین جنوب</div>

@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#2C3E50">
         <link rel="manifest" href="/site.webmanifest">
+        <link rel="apple-touch-icon" href="/favicon.ico">
         <title>طنین جنوب | آخرین اخبار جنوب</title>
         <meta name="description" content="پایگاه خبری طنین جنوب؛ پوشش تازه‌ترین اخبار استان‌های جنوبی ایران.">
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>

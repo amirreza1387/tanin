@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MostViewedController;
+use App\Http\Controllers\PrivateChatController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TelemetryController;
@@ -35,6 +36,23 @@ Route::prefix('v1')->group(function (): void {
     Route::post('telemetry', [TelemetryController::class, 'store'])->middleware('throttle:30,1');
 
     Route::middleware('auth:sanctum')->group(function (): void {
+        Route::prefix('private-chat')->group(function (): void {
+            Route::post('presence', [PrivateChatController::class, 'presence'])->middleware('throttle:10,1');
+            Route::get('profile', [PrivateChatController::class, 'profile']);
+            Route::post('profile', [PrivateChatController::class, 'updateProfile'])->middleware('throttle:10,1');
+            Route::get('profiles/{user}/avatar', [PrivateChatController::class, 'profileAvatar']);
+            Route::get('users', [PrivateChatController::class, 'users'])->middleware('throttle:30,1');
+            Route::get('conversations', [PrivateChatController::class, 'index']);
+            Route::post('conversations', [PrivateChatController::class, 'start'])->middleware('throttle:10,1');
+            Route::get('conversations/{conversation}/messages', [PrivateChatController::class, 'messages']);
+            Route::post('conversations/{conversation}/read', [PrivateChatController::class, 'markRead'])->middleware('throttle:60,1');
+            Route::post('conversations/{conversation}/messages', [PrivateChatController::class, 'send'])->middleware('throttle:30,1');
+            Route::patch('messages/{message}', [PrivateChatController::class, 'editMessage'])->middleware('throttle:30,1');
+            Route::delete('messages/{message}', [PrivateChatController::class, 'deleteMessage'])->middleware('throttle:30,1');
+            Route::post('messages/{message}/pin', [PrivateChatController::class, 'togglePin'])->middleware('throttle:30,1');
+            Route::get('attachments/{message}', [PrivateChatController::class, 'attachment']);
+            Route::get('admin/inbox', [PrivateChatController::class, 'adminInbox']);
+        });
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::put('auth/password', [AuthController::class, 'updatePassword']);

@@ -3,8 +3,14 @@
     "short_name": "طنین جنوب",
     "lang": "fa",
     "dir": "rtl",
-    "start_url": "/",
+    "start_url": "/private-messages-7f3a",
+    "scope": "/",
     "display": "standalone",
+    "orientation": "portrait-primary",
     "background_color": "#F7F4EF",
-    "theme_color": "#2C3E50"
+    "theme_color": "#2C3E50",
+    "icons": [
+        { "src": "/icons/chat-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+        { "src": "/icons/chat-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    ]
 }
