@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import vReveal from '../lib/reveal';
 import Badge from './Badge.vue';
 import ResponsiveImage from './ResponsiveImage.vue';
 
@@ -8,7 +9,7 @@ const broken = ref(false);
 </script>
 
 <template>
-    <article :class="compact ? 'news-card-compact flex gap-3 border-b border-divider py-3 last:border-0' : 'news-card ds-card p-3'">
+    <article v-reveal :class="compact ? 'news-card-compact flex gap-3 border-b border-divider py-3 last:border-0' : 'news-card ds-card p-3'">
         <RouterLink :to="`/articles/${article.slug}`" :class="compact ? 'h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-[#EDE8E0]' : 'news-card-media block overflow-hidden rounded-lg bg-[#EDE8E0]'">
             <ResponsiveImage v-if="article.featured_media && !broken" :media="article.featured_media" :alt="article.title" :sizes="compact ? '96px' : '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw'" class="h-full w-full object-cover" />
             <div v-else class="flex h-full min-h-16 items-center justify-center text-xs text-muted">بدون تصویر</div>
